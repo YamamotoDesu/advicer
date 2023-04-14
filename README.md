@@ -261,3 +261,72 @@ class ErrorMessage extends StatelessWidget {
   }
 }
 ```
+
+## [Application Layer - BLoC State Management](https://github.com/YamamotoDesu/advicer/commit/a9e2f4c9ab0cc2a0e1ab3540d39f7044d0c6086f)
+
+lib/2_application/pages/advice/bloc/advicer_bloc.dart
+```dart
+import 'package:flutter/foundation.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+part 'advicer_event.dart';
+part 'advicer_state.dart';
+
+class AdvicerBloc extends Bloc<AdvicerEvent, AdvicerState> {
+  AdvicerBloc() : super(AdvicerInitial()) {
+    on<AdvicerEvent>((event, emit) async {
+      emit(AdvicerStateLoading());
+
+      debugPrint('fake get advice triggered');
+      await Future.delayed(
+        const Duration(
+          seconds: 3,
+        ),
+        () {},
+      );
+      debugPrint('got advice');
+      emit(
+        AdvicerStateLoaded(advice: 'fake advice to test block'),
+      );
+      // emit(
+      //   AdvicerStateError(message: 'error message'),
+      // );
+    });
+  }
+}
+```
+
+lib/2_application/pages/advice/bloc/advicer_event.dart
+```dart
+part of 'advicer_bloc.dart';
+
+@immutable
+abstract class AdvicerEvent {}
+
+class AdvideRequestedEvent extends AdvicerEvent {}
+```
+
+lib/2_application/pages/advice/bloc/advicer_state.dart
+```dart
+part of 'advicer_bloc.dart';
+
+@immutable
+abstract class AdvicerState {}
+
+class AdvicerInitial extends AdvicerState {}
+
+class AdvicerStateLoading extends AdvicerState {}
+
+class AdvicerStateLoaded extends AdvicerState {
+  final String advice;
+  AdvicerStateLoaded({
+    required this.advice,
+  });
+}
+
+class AdvicerStateError extends AdvicerState {
+  final String message;
+  AdvicerStateError({required this.message});
+}
+
+```
