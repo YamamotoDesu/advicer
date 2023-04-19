@@ -1,7 +1,7 @@
 # advicer
-
-A new Flutter project.
 https://github.com/OpenSphereSoftware/FlutterMadeEasy_ZeroToMastery/tree/3.1_advicer_application_layer
+
+<img width="300" alt="スクリーンショット 2023-04-14 10 43 54" src="https://user-images.githubusercontent.com/47273077/233223780-c47fe91f-39e9-455a-a5a2-7b7b97b57e45.gif">
 
 ## Getting Started
 
