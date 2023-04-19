@@ -816,4 +816,105 @@ class AdviceRemoteDatasourceImpl implements AdviceRemoteDatasource {
       return AdviceModel.fromJson(responseBody);
     }
   }
-  ```
+```
+  
+## Clean Architecture - Dependency Injection
+
+lib/injection.dart
+```dart
+import 'package:advicer/0_data/datasources/advice_remote_datasource.dart';
+import 'package:advicer/0_data/repositories/advice_repo_impl.dart';
+import 'package:advicer/1_domain/repositories/advice_repo.dart';
+import 'package:advicer/1_domain/usecases/advice_usecases.dart';
+import 'package:advicer/2_application/pages/advice/cubit/advicer_cubit.dart';
+import 'package:get_it/get_it.dart';
+import 'package:http/http.dart' as http;
+
+final sl // sl == Service Locator
+    = GetIt
+        .instance; // GetIt is a service locator that lets you retrieve objects using a type or a name.
+
+Future<void> init() async {
+  // ! application Layer
+  sl.registerFactory(
+    () => AdvicerCubit(
+      adviceUseCases: sl(),
+    ),
+  );
+
+  // ! domain Layer
+  sl.registerFactory(
+    () => AdviceUseCases(
+      adviceRepo: sl(),
+    ),
+  );
+  ;
+  // ! data Layer
+  sl.registerFactory<AdviceRepo>(
+    () => AdviceRepoImpl(
+      adviceRemoteDatasource: sl(),
+    ),
+  );
+  sl.registerFactory<AdviceRemoteDatasource>(
+    () => AdviceRemoteDatasourceImpl(
+      client: sl(),
+    ),
+  );
+
+   // ! externs
+  sl.registerFactory(() => http.Client());
+}
+```
+
+lib/main.dart
+```dart
+import 'injection.dart' as di;
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await di.init();
+  runApp(ChangeNotifierProvider(
+    create: (context) => ThemeService(),
+    child: const MyApp(),
+  ));
+}
+```
+
+lib/0_data/datasources/advice_remote_datasource.dart
+```dart
+class AdviceRemoteDatasourceImpl implements AdviceRemoteDatasource {
+  final http.Client client;
+
+  AdviceRemoteDatasourceImpl({
+    required this.client,
+  });
+```
+
+lib/0_data/repositories/advice_repo_impl.dart
+```dart
+class AdviceRepoImpl implements AdviceRepo {
+  AdviceRepoImpl({
+    required this.adviceRemoteDatasource,
+  });
+  final AdviceRemoteDatasource adviceRemoteDatasource;
+```
+
+lib/2_application/pages/advice/advice_page.dart
+```dart
+
+class AdvicerCubit extends Cubit<AdvicerQubitState> {
+  final AdviceUseCases adviceUseCases;
+  AdvicerCubit({
+    required this.adviceUseCases,
+  }) : super(AdvicerInitial());
+```
+
+lib/1_domain/usecases/advice_usecases.dart
+```dart
+class AdviceUseCases {
+  AdviceUseCases({
+    required this.adviceRepo,
+  });
+  final AdviceRepo adviceRepo;
+```
+
