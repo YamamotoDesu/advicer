@@ -648,3 +648,93 @@ class AdvicerCubit extends Cubit<AdvicerQubitState> {
 }
 ```
 
+##  Data Layer - Models & Datasources
+
+<img width="300" alt="スクリーンショット 2023-04-20 7 40 45" src="https://user-images.githubusercontent.com/47273077/233215122-13a7b6e0-0c8e-4971-8c4c-392b698727ce.png">
+
+lib/0_data/datasources/advice_remote_datasource.dart
+```dart
+import 'dart:convert';
+
+import 'package:advicer/0_data/models/advice_model.dart';
+import 'package:http/http.dart' as http;
+
+abstract class AdviceRemoteDatasource {
+  Future<AdviceModel> getRandomAdviceFromApi();
+}
+
+class AdviceRemoteDatasourceImpl implements AdviceRemoteDatasource {
+  final client = http.Client();
+  @override
+  Future<AdviceModel> getRandomAdviceFromApi() async {
+    final response = await client.get(
+      Uri.parse(
+        'https://api.flutter-community.com/api/v1/advice',
+      ),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
+    final responseBody = json.decode(response.body);
+    return AdviceModel.fromJson(responseBody);
+  }
+}
+```
+
+ 
+lib/0_data/models/advice_model.dart
+```dart
+import 'package:advicer/1_domain/entities/advice_entity.dart';
+import 'package:equatable/equatable.dart';
+
+class AdviceModel extends AdviceEntity with EquatableMixin {
+  AdviceModel({
+    required String advice,
+    required int id,
+  }) : super(
+          advice: advice,
+          id: id,
+        );
+
+  factory AdviceModel.fromJson(Map<String, dynamic> json) {
+    return AdviceModel(
+      advice: json['advice'],
+      id: json['advice_id'],
+    );
+  }
+}
+```
+
+lib/0_data/repositories/advice_repo_impl.dart
+```dart
+
+import 'package:advicer/0_data/datasources/advice_remote_datasource.dart';
+import 'package:advicer/1_domain/failures/failures.dart';
+import 'package:advicer/1_domain/entities/advice_entity.dart';
+import 'package:advicer/1_domain/repositories/advice_repo.dart';
+import 'package:dartz/dartz.dart';
+
+class AdviceRepoImpl implements AdviceRepo {
+  final AdviceRemoteDatasource adviceRemoteDatasource = AdviceRemoteDatasourceImpl();
+  @override
+  Future<Either<Failure, AdviceEntity>> getAdviceFromDatasource() async {
+    final result = await adviceRemoteDatasource.getRandomAdviceFromApi();
+    return right(result);
+  }
+}
+```
+
+lib/1_domain/usecases/advice_usecases.dart
+```dart
+import 'package:advicer/0_data/repositories/advice_repo_impl.dart';
+import 'package:advicer/1_domain/entities/advice_entity.dart';
+import 'package:advicer/1_domain/failures/failures.dart';
+import 'package:dartz/dartz.dart';
+
+class AdviceUseCases {
+  final adviceRepo = AdviceRepoImpl();
+  Future<Either<Failure, AdviceEntity>> getAdvice() async {
+    return adviceRepo.getAdviceFromDatasource();
+  }
+}
+```
