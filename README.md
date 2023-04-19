@@ -515,5 +515,30 @@ class AdvicerStateError extends AdvicerQubitState {
   List<Object?> get props => [message];
 }
 ```
+ 
+lib/2_application/pages/advice/advice_page.dart
+```dart
+@override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      // create: (context) => AdvicerBloc(),
+      create: (context) => AdvicerCubit(),
+      child: const AdvicerPage(),
+    );
+  }
+  
+```
 
+lib/2_application/pages/advice/widgets/custom_button.dart
+```dart
+class CustomButton extends StatelessWidget {
+  const CustomButton({super.key});
 
+  @override
+  Widget build(BuildContext context) {
+    final themeData = Theme.of(context);
+    return InkResponse(
+     // onTap: () => BlocProvider.of<AdvicerBloc>(context).add(
+     //   AdvideRequestedEvent(),
+     //  ),
+      onTap: () => BlocProvider.of<AdvicerCubit>(context).adviceRequested(),
