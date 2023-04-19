@@ -10,15 +10,18 @@ const serverFailureMessage = 'Oops, API Error, please try again!';
 const cacheFailureMessage = 'Oops, Cache Error, please try again!';
 
 class AdvicerCubit extends Cubit<AdvicerQubitState> {
-  AdvicerCubit() : super(AdvicerInitial());
-  final AdviceUseCases adviceUseCases = AdviceUseCases();
+  final AdviceUseCases adviceUseCases;
+  AdvicerCubit({
+    required this.adviceUseCases,
+  }) : super(AdvicerInitial());
 
   void adviceRequested() async {
     emit(AdvicerStateLoading());
 
     final failureOrAdvice = await adviceUseCases.getAdvice();
     failureOrAdvice.fold(
-      (failure) => emit(AdvicerStateError(message: _mapFailureToMesssage(failure))),
+      (failure) =>
+          emit(AdvicerStateError(message: _mapFailureToMesssage(failure))),
       (advice) => emit(AdvicerStateLoaded(advice: advice.advice)),
     );
   }
