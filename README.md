@@ -738,3 +738,82 @@ class AdviceUseCases {
   }
 }
 ```
+
+## Data Layer - Exceptions & Failures
+lib/0_data/exceptions/exceptions.dart
+```dart
+class ServerException implements Exception {}
+
+class CacheException implements Exception {}
+```
+
+lib/0_data/models/advice_model.dart
+```dart
+import 'package:advicer/1_domain/entities/advice_entity.dart';
+import 'package:equatable/equatable.dart';
+
+class AdviceModel extends AdviceEntity with EquatableMixin {
+  AdviceModel({
+    required String advice,
+    required int id,
+  }) : super(
+          advice: advice,
+          id: id,
+        );
+
+  factory AdviceModel.fromJson(Map<String, dynamic> json) {
+    return AdviceModel(
+      advice: json['advice'],
+      id: json['advice_id'],
+    );
+  }
+}
+```
+
+lib/0_data/repositories/advice_repo_impl.dart
+```dart
+class AdviceRepoImpl implements AdviceRepo {
+  final AdviceRemoteDatasource adviceRemoteDatasource =
+      AdviceRemoteDatasourceImpl();
+  @override
+  Future<Either<Failure, AdviceEntity>> getAdviceFromDatasource() async {
+    try {
+      final result = await adviceRemoteDatasource.getRandomAdviceFromApi();
+      return right(result);
+    } on ServerException catch (_) {
+      return left(ServerFailure());
+    } on CacheException catch (_) {
+      return left(CacheFailure());
+    } catch (e) {
+      return left(GeneralFailure());
+    }
+  }
+}
+```
+
+lib/0_data/datasources/advice_remote_datasource.dart
+```dart
+abstract class AdviceRemoteDatasource {
+  Future<AdviceModel> getRandomAdviceFromApi();
+}
+
+class AdviceRemoteDatasourceImpl implements AdviceRemoteDatasource {
+  final client = http.Client();
+  @override
+  Future<AdviceModel> getRandomAdviceFromApi() async {
+    final response = await client.get(
+      Uri.parse(
+        'https://api.flutter-community.com/api/v1/advice',
+      ),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    );
+    if (response.statusCode != 200) {
+      throw ServerException();
+    } else {
+      final responseBody = json.decode(response.body);
+      return AdviceModel.fromJson(responseBody);
+    }
+  }
+  ```
