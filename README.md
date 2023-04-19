@@ -450,4 +450,70 @@ lib/2_application/pages/advice/widgets/custom_button.dart
       ),
  ```
  
- 
+ ## Application Layer - Cubit
+ lib/2_application/pages/advice/cubit/advicer_cubit.dart
+ ```dart
+ import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
+
+part 'advicer_state.dart';
+
+class AdvicerCubit extends Cubit<AdvicerQubitState> {
+  AdvicerCubit() : super(AdvicerInitial());
+
+  void adviceRequested() async {
+    emit(AdvicerStateLoading());
+
+    debugPrint('fake get advice triggered');
+    await Future.delayed(
+      const Duration(
+        seconds: 3,
+      ),
+      () {},
+    );
+    debugPrint('got advice');
+    emit(
+      const AdvicerStateLoaded(
+        advice: 'fake advice to test block',
+      ),
+    );
+  }
+}
+```
+
+lib/2_application/pages/advice/cubit/advicer_state.dart
+```dart
+part of 'advicer_cubit.dart';
+
+abstract class AdvicerQubitState extends Equatable {
+  const AdvicerQubitState();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class AdvicerInitial extends AdvicerQubitState {}
+
+class AdvicerStateLoading extends AdvicerQubitState {}
+
+class AdvicerStateLoaded extends AdvicerQubitState {
+  final String advice;
+  const AdvicerStateLoaded({
+    required this.advice,
+  });
+
+  @override
+  List<Object?> get props => [advice];
+}
+
+class AdvicerStateError extends AdvicerQubitState {
+  final String message;
+  const AdvicerStateError({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+```
+
+
