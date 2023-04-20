@@ -880,6 +880,31 @@ void main() async {
 }
 ```
 
+lib/2_application/pages/advice/advice_page.dart
+```dart
+class AdvicerPageWrapperProvider extends StatelessWidget {
+  const AdvicerPageWrapperProvider({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => sl<AdvicerCubit>(),
+      child: const AdvicerPage(),
+    );
+  }
+}
+```
+
+lib/2_application/pages/advice/cubit/advicer_cubit.dart
+```dart
+
+class AdvicerCubit extends Cubit<AdvicerQubitState> {
+  final AdviceUseCases adviceUseCases;
+  AdvicerCubit({
+    required this.adviceUseCases,
+  }) : super(AdvicerInitial());
+```
+
 lib/0_data/datasources/advice_remote_datasource.dart
 ```dart
 class AdviceRemoteDatasourceImpl implements AdviceRemoteDatasource {
@@ -899,15 +924,6 @@ class AdviceRepoImpl implements AdviceRepo {
   final AdviceRemoteDatasource adviceRemoteDatasource;
 ```
 
-lib/2_application/pages/advice/advice_page.dart
-```dart
-
-class AdvicerCubit extends Cubit<AdvicerQubitState> {
-  final AdviceUseCases adviceUseCases;
-  AdvicerCubit({
-    required this.adviceUseCases,
-  }) : super(AdvicerInitial());
-```
 
 lib/1_domain/usecases/advice_usecases.dart
 ```dart
