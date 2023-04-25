@@ -23,6 +23,17 @@ void main() {
 
         expect(adviceFieldFinder, findsOneWidget);
       });
+
+      testWidgets('when a long text is given', (widgetTester) async {
+        const text = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
+
+        await widgetTester.pumpWidget(widgetUnserTest(adviceText: text));
+        await widgetTester.pumpAndSettle();
+
+        final adviceFieldFinder = find.byType(AdviceField);
+
+        expect(adviceFieldFinder, findsOneWidget);
+      });
     });
   });
 }
